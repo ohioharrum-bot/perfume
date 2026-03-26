@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-};
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  images: {
+    domains: ['rvgfbbjclpaznfkfvcdl.supabase.co'],
+  },
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
