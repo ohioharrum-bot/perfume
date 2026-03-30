@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { Menu, X, User, MessageCircle } from "lucide-react";
 import fragrances from "../data/fragrances";
 import { supabase } from "../lib/supabaseClient";
+import ScentSearch from "../data/ScentSearch";
 
 export default function Navbar() {
   const [term, setTerm] = useState("");
@@ -188,7 +189,7 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b shadow-sm">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b shadow-sm">
       <nav className="mx-auto max-w-6xl px-4 sm:px-8 py-3 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
@@ -207,20 +208,7 @@ export default function Navbar() {
 
         {/* Desktop Search */}
         <div className="relative hidden sm:flex flex-1 justify-center mx-6">
-          <form onSubmit={onSubmit} className="w-full max-w-sm">
-            <input
-              ref={inputRef}
-              type="text"
-              value={term}
-              onChange={(e) => {
-                setTerm(e.target.value);
-                setOpen(true);
-              }}
-              onFocus={() => setOpen(!!term)}
-              placeholder="Search by brand, note, or name…"
-              className="w-full rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-            />
-          </form>
+          <ScentSearch />
         </div>
 
         {/* Desktop Nav Links */}
@@ -270,15 +258,7 @@ export default function Navbar() {
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div className="sm:hidden border-t bg-white shadow-lg p-4 space-y-4">
-          <form onSubmit={onSubmit}>
-            <input
-              type="text"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              placeholder="Search fragrances..."
-              className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10"
-            />
-          </form>
+          <ScentSearch />
 
           <div className="flex flex-col text-sm font-medium space-y-3">
             <Link

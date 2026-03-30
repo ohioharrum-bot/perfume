@@ -4,6 +4,7 @@ import Head from "next/head";
 import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { supabase } from "../lib/supabaseClient";
 
 export default function App({ Component, pageProps }) {
   const [showPreloader, setShowPreloader] = useState(false);
@@ -17,6 +18,19 @@ export default function App({ Component, pageProps }) {
     } else {
       setVisible(true);
     }
+  }, []);
+
+  useEffect(() => {
+    // Handle auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session?.user?.email);
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const finishPreloader = () => {

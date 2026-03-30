@@ -50,7 +50,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/v/aventus_1_2.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Aventus",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/aventus",
+      "sephora": "https://www.sephora.com/search?q=creed+aventus"
+    }
   },
   {
     "id": "ss-creed-002",
@@ -95,7 +101,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/v/aventus_cologne_1.png",
-    "type": "Cologne"
+    "type": "Cologne",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Aventus+Cologne",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/aventus-cologne",
+      "sephora": "https://www.sephora.com/search?q=creed+aventus+cologne"
+    }
   },
   {
     "id": "ss-creed-003",
@@ -139,7 +151,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/v/i/viking_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Viking",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/viking",
+      "sephora": "https://www.sephora.com/search?q=creed+viking"
+    }
   },
   {
     "id": "ss-creed-004",
@@ -180,7 +198,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/v/i/viking_cologne_1.png",
-    "type": "Cologne"
+    "type": "Cologne",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Viking+Cologne",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/viking-cologne",
+      "sephora": "https://www.sephora.com/search?q=creed+viking+cologne"
+    }
   },
   {
     "id": "ss-creed-005",
@@ -223,7 +247,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/g/r/green_irish_tweed_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Green+Irish+Tweed",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/green-irish-tweed",
+      "sephora": "https://www.sephora.com/search?q=creed+green+irish+tweed"
+    }
   },
   {
     "id": "ss-creed-006",
@@ -264,7 +294,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/s/i/silver_mountain_water_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Silver+Mountain+Water",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/silver-mountain-water",
+      "sephora": "https://www.sephora.com/search?q=creed+silver+mountain+water"
+    }
   },
   {
     "id": "ss-creed-007",
@@ -297,7 +333,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/b/o/bois_du_portugal_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-008",
@@ -331,7 +368,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/e/r/erolfa_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-009",
@@ -364,7 +402,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/h/i/himalaya_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-010",
@@ -406,7 +445,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_oud_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Royal+Oud",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/royal-oud",
+      "sephora": "https://www.sephora.com/search?q=creed+royal+oud"
+    }
   },
   {
     "id": "ss-creed-011",
@@ -438,7 +483,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/t/a/tabarome_millesime_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-012",
@@ -470,7 +516,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/o/r/original_vetiver_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-013",
@@ -503,7 +550,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_water_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-014",
@@ -535,7 +583,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/n/e/neroli_sauvage_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-015",
@@ -568,7 +617,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/s/p/spice_and_wood_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 665
   },
   {
     "id": "ss-creed-016",
@@ -598,8 +648,9 @@ const fragrances = [
         "price": 480
       }
     ],
-    "image": "/fragrances/creed-bois-de-santal.png",
-    "type": "Millésime (Eau de Parfum)"
+    "image": "https://www.creedfragrance.com/media/catalog/product/b/o/bois_de_santal_1.png",
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-017",
@@ -630,8 +681,9 @@ const fragrances = [
         "price": 490
       }
     ],
-    "image": "/fragrances/creed-royal-scottish-lavender.png",
-    "type": "Millésime (Eau de Parfum)"
+    "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_scottish_lavender_1.png",
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-018",
@@ -661,8 +713,9 @@ const fragrances = [
         "price": 470
       }
     ],
-    "image": "/fragrances/creed-baie-de-genievre.png",
-    "type": "Millésime (Eau de Parfum)"
+    "image": "https://www.creedfragrance.com/media/catalog/product/b/a/baie_de_genievre_1.png",
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-019",
@@ -696,7 +749,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/l/o/love_in_white_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Love+in+White",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/love-in-white",
+      "sephora": "https://www.sephora.com/search?q=creed+love+in+white"
+    }
   },
   {
     "id": "ss-creed-020",
@@ -728,7 +787,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/l/o/love_in_white_for_summer_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-021",
@@ -762,7 +822,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/s/p/spring_flower_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-022",
@@ -796,7 +857,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/f/l/fleurs_de_gardenia_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-023",
@@ -838,7 +900,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/v/aventus_for_her_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365
   },
   {
     "id": "ss-creed-024",
@@ -872,7 +935,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/w/i/wind_flowers_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-025",
@@ -905,7 +969,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/l/o/love_in_black_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-026",
@@ -939,7 +1004,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/c/acqua_fiorentina_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-027",
@@ -969,8 +1035,9 @@ const fragrances = [
         "price": 400
       }
     ],
-    "image": "/fragrances/creed-fantasia-de-fleurs.png",
-    "type": "Millésime (Eau de Parfum)"
+    "image": "https://www.creedfragrance.com/media/catalog/product/f/a/fantasia_de_fleurs_1.png",
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-028",
@@ -1000,8 +1067,9 @@ const fragrances = [
         "price": 410
       }
     ],
-    "image": "/fragrances/creed-jasmin-imperatrice-eugenie.png",
-    "type": "Millésime (Eau de Parfum)"
+    "image": "https://www.creedfragrance.com/media/catalog/product/j/a/jasmin_imperatrice_eugenie_1.png",
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-029",
@@ -1033,7 +1101,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/f/l/fleurissimo_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-030",
@@ -1074,7 +1143,13 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/v/i/virgin_island_water_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 365,
+    "buyLinks": {
+      "amazon": "https://www.amazon.com/s?k=Creed+Virgin+Island+Water",
+      "fragrancenet": "https://www.fragrancenet.com/fragrance/creed/virgin-island-water",
+      "sephora": "https://www.sephora.com/search?q=creed+virgin+island+water"
+    }
   },
   {
     "id": "ss-creed-031",
@@ -1107,7 +1182,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_mayfair_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-032",
@@ -1140,7 +1216,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/o/r/original_santal_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 495
   },
   {
     "id": "ss-creed-033",
@@ -1173,7 +1250,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_princess_oud_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-034",
@@ -1203,8 +1281,9 @@ const fragrances = [
         "price": 410
       }
     ],
-    "image": "/fragrances/creed-royal-delight.png",
-    "type": "Millésime (Eau de Parfum)"
+    "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_delight_1.png",
+    "type": "Millésime (Eau de Parfum)",
+    "price": 430
   },
   {
     "id": "ss-creed-035",
@@ -1236,7 +1315,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/c/i/citrus_bigarrade_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 425
   },
   {
     "id": "ss-creed-036",
@@ -1269,7 +1349,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/z/e/zeste_mandarine_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 425
   },
   {
     "id": "ss-creed-037",
@@ -1302,7 +1383,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/p/u/pure_white_cologne_1.png",
-    "type": "Cologne"
+    "type": "Cologne",
+    "price": 665
   },
   {
     "id": "ss-creed-038",
@@ -1334,7 +1416,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/s/u/sublime_vanille_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 665
   },
   {
     "id": "ss-creed-039",
@@ -1366,7 +1449,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/w/h/white_amber_1.png",
-    "type": "Millésime (Eau de Parfum)"
+    "type": "Millésime (Eau de Parfum)",
+    "price": 665
   },
   {
     "id": "ss-creed-040",
@@ -1399,7 +1483,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/v/aventus_10th_anniversary_1.png",
-    "type": "Extrait de Parfum"
+    "type": "Extrait de Parfum",
+    "price": 535
   },
   {
     "id": "ss-creed-041",
@@ -1432,7 +1517,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/j/a/jardin_damalfi_1.png",
-    "type": "Extrait de Parfum"
+    "type": "Extrait de Parfum",
+    "price": 665
   },
   {
     "id": "ss-creed-042",
@@ -1465,7 +1551,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/s/p/spice_and_wood_1.png",
-    "type": "Extrait de Parfum"
+    "type": "Extrait de Parfum",
+    "price": 665
   },
   {
     "id": "ss-creed-043",
@@ -1497,7 +1584,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/w/h/white_flowers_1.png",
-    "type": "Extrait de Parfum"
+    "type": "Extrait de Parfum",
+    "price": 665
   },
   {
     "id": "ss-creed-044",
@@ -1529,7 +1617,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_service_1.png",
-    "type": "Extrait de Parfum"
+    "type": "Extrait de Parfum",
+    "price": 665
   },
   {
     "id": "ss-creed-045",
@@ -1562,7 +1651,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/b/absolu_aventus_1.png",
-    "type": "Extrait de Parfum"
+    "type": "Extrait de Parfum",
+    "price": 795
   },
   {
     "id": "ss-creed-046",
@@ -1595,7 +1685,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/v/e/vetiver_geranium_1.png",
-    "type": "Eau de Toilette"
+    "type": "Eau de Toilette",
+    "price": 425
   },
   {
     "id": "ss-creed-047",
@@ -1627,7 +1718,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/i/r/iris_tubereuse_1.png",
-    "type": "Eau de Toilette"
+    "type": "Eau de Toilette",
+    "price": 425
   },
   {
     "id": "ss-creed-048",
@@ -1659,7 +1751,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/c/e/cedre_blanc_1.png",
-    "type": "Eau de Toilette"
+    "type": "Eau de Toilette",
+    "price": 425
   },
   {
     "id": "ss-creed-049",
@@ -1692,7 +1785,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/s/asian_green_tea_1.png",
-    "type": "Eau de Toilette"
+    "type": "Eau de Toilette",
+    "price": 425
   },
   {
     "id": "ss-creed-050",
@@ -1724,7 +1818,8 @@ const fragrances = [
       }
     ],
     "image": "https://www.creedfragrance.com/media/catalog/product/a/b/aberdeen_lavender_1.png",
-    "type": "Eau de Toilette"
+    "type": "Eau de Toilette",
+    "price": 425
   },
   {
     "id": "ss-creed-051",
@@ -1755,8 +1850,9 @@ const fragrances = [
         "price": 470
       }
     ],
-    "image": "/fragrances/creed-vetiver-1948.png",
-    "type": "Eau de Parfum"
+    "image": "https://www.creedfragrance.com/media/catalog/product/v/e/vetiver_1948_1.png",
+    "type": "Eau de Parfum",
+    "price": 495
   },
   {
     "id": "ss-creed-052",
@@ -1786,8 +1882,9 @@ const fragrances = [
         "price": 475
       }
     ],
-    "image": "/fragrances/creed-bois-de-cedrat.png",
-    "type": "Eau de Parfum"
+    "image": "https://www.creedfragrance.com/media/catalog/product/b/o/bois_de_cedrat_1.png",
+    "type": "Eau de Parfum",
+    "price": 495
   },
   {
     "id": "ss-creed-053",
@@ -1817,8 +1914,9 @@ const fragrances = [
         "price": 480
       }
     ],
-    "image": "/fragrances/creed-royal-english-leather.png",
-    "type": "Eau de Parfum"
+    "image": "https://www.creedfragrance.com/media/catalog/product/r/o/royal_english_leather_1.png",
+    "type": "Eau de Parfum",
+    "price": 495
   },
   {
     "id": "ss-creed-054",
@@ -1848,8 +1946,9 @@ const fragrances = [
         "price": 475
       }
     ],
-    "image": "/fragrances/creed-bois-de-santal-vintage.png",
-    "type": "Eau de Parfum"
+    "image": "https://www.creedfragrance.com/media/catalog/product/b/o/bois_de_santal_vintage_1.png",
+    "type": "Eau de Parfum",
+    "price": 495
   },
   {
     "id": "ss-creed-055",
@@ -1880,8 +1979,9 @@ const fragrances = [
         "price": 465
       }
     ],
-    "image": "/fragrances/creed-epicea.png",
-    "type": "Eau de Parfum"
+    "image": "https://www.creedfragrance.com/media/catalog/product/e/p/epicea_1.png",
+    "type": "Eau de Parfum",
+    "price": 495
   },
   {
     "id": "ss-creed-056",
@@ -1912,8 +2012,9 @@ const fragrances = [
         "price": 470
       }
     ],
-    "image": "/fragrances/creed-selection-verte.png",
-    "type": "Eau de Parfum"
+    "image": "https://www.creedfragrance.com/media/catalog/product/s/e/selection_verte_1.png",
+    "type": "Eau de Parfum",
+    "price": 495
   }
 ];
 
