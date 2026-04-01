@@ -24,9 +24,11 @@ export default function FragranceDetail() {
     );
   }
 
+  const listings = fragrance.listings || [];
+
   const lowest =
-    fragrance.listings?.length > 0
-      ? Math.min(...fragrance.listings.map((l) => l.price))
+    listings.length > 0
+      ? Math.min(...listings.map((l) => l.price))
       : fragrance.price;
 
   const similar = fragrances
@@ -74,9 +76,12 @@ export default function FragranceDetail() {
         <div className="flex-1 max-w-md mx-auto lg:mx-0">
           <div className="aspect-square overflow-hidden rounded-2xl border shadow-sm bg-white">
             <img
-              src={fragrance.image || "/placeholder.png"}
+              src={fragrance.image || `https://source.unsplash.com/featured/600x600?${encodeURIComponent(fragrance.brand + ' ' + fragrance.name + ' perfume bottle')}`}
               alt={fragrance.name}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = `https://source.unsplash.com/featured/600x600?perfume-bottle`;
+              }}
             />
           </div>
         </div>
@@ -135,8 +140,8 @@ export default function FragranceDetail() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        {fragrance.listings.length > 0 ? (
-          fragrance.listings.map((listing, i) => (
+        {listings.length > 0 ? (
+          listings.map((listing, i) => (
             <div
               key={i}
               className="rounded-2xl border bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
@@ -217,9 +222,10 @@ export default function FragranceDetail() {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {similar.map((f) => {
+              const fListings = f.listings || [];
               const lowest =
-                f.listings?.length > 0
-                  ? Math.min(...f.listings.map((l) => l.price))
+                fListings.length > 0
+                  ? Math.min(...fListings.map((l) => l.price))
                   : f.price;
 
               return (
