@@ -4,6 +4,7 @@ import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
 import { Filter, X, Search, ShoppingBag, Tag } from "lucide-react";
 import Head from "next/head";
+import { createClient } from "@supabase/supabase-js";
 
 const CONDITIONS = ["new", "like_new", "good", "fair"];
 const GENDERS = ["men", "women", "unisex"];
@@ -41,60 +42,25 @@ function FragranceCard({ scent }) {
   );
 }
 
-export default function Browse() {
+export default function Browse({ initialListings = [], initialFragrances = [] }) {
   const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
-  const [listings, setListings] = useState([]);
-  const [loadingListings, setLoadingListings] = useState(true);
-  const [fragrances, setFragrances] = useState([]);
-  const [loadingFragrances, setLoadingFragrances] = useState(true);
+  const [listings, setListings] = useState(initialListings);
+  const [loadingListings, setLoadingListings] = useState(false);
+  const [fragrances, setFragrances] = useState(initialFragrances);
+  const [loadingFragrances, setLoadingFragrances] = useState(false);
   const [activeFilters, setActiveFilters] = useState({ brands: [], conditions: [], genders: [] });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Debounce
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
-  // Fetch listings
-  useEffect(() => {
-    async function fetchListings() {
-      setLoadingListings(true);
-      const { data, error } = await supabase
-        .from("listings")
-        .select(`*, listing_images (image_url, is_cover, display_order)`)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
-      if (!error && data) setListings(data);
-      setLoadingListings(false);
-    }
-    fetchListings();
-  }, []);
-
-  // Fetch fragrances
-  useEffect(() => {
-    async function fetchFragrances() {
-      setLoadingFragrances(true);
-      try {
-        const res = await fetch('/api/fragrances');
-        if (res.ok) {
-          const data = await res.json();
-          setFragrances(data);
-        }
-      } catch (error) {
-        console.error('Error fetching fragrances:', error);
-      }
-      setLoadingFragrances(false);
-    }
-    fetchFragrances();
-  }, []);
-
-  // Filter fragrances
   const filteredFragrances = useMemo(() => {
     if (loadingFragrances) return [];
     let items = fragrances;
@@ -113,7 +79,6 @@ export default function Browse() {
     return items;
   }, [fragrances, loadingFragrances, debouncedSearch, activeFilters]);
 
-  // Filter listings
   const filteredListings = useMemo(() => {
     let items = listings;
     if (debouncedSearch) {
@@ -145,7 +110,9 @@ export default function Browse() {
     });
   }
 
-  function clearFilters() { setActiveFilters({ brands: [], conditions: [], genders: [] }); }
+  function clearFilters() {
+    setActiveFilters({ brands: [], conditions: [], genders: [] });
+  }
 
   function getCoverImage(listing) {
     if (!listing?.listing_images?.length) return null;
@@ -207,15 +174,12 @@ export default function Browse() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-10">
 
-        {/* Sidebar */}
         <aside className="hidden lg:block sticky self-start top-24 h-max rounded-2xl border bg-white shadow-sm p-5">
           {SidebarContent}
         </aside>
 
-        {/* Main */}
         <div>
 
-          {/* Desktop header */}
           <div className="hidden lg:flex items-center justify-between gap-4 mb-4">
             <h1 className="text-3xl font-semibold tracking-wide" style={{ fontFamily: "'DM Serif Display', serif" }}>Browse Fragrances</h1>
             <Link href="/Listing/createListing" className="px-4 py-2 bg-[#1a1a18] text-white text-sm rounded-xl hover:bg-black transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -223,7 +187,6 @@ export default function Browse() {
             </Link>
           </div>
 
-          {/* Mobile header */}
           <div className="flex items-center justify-between mb-4 lg:hidden">
             <h1 className="text-2xl font-semibold tracking-wide" style={{ fontFamily: "'DM Serif Display', serif" }}>Browse</h1>
             <button onClick={() => setShowFilters(true)} className="flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm hover:bg-neutral-50" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -231,7 +194,6 @@ export default function Browse() {
             </button>
           </div>
 
-          {/* Search */}
           <div className="relative mb-6">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
@@ -249,7 +211,6 @@ export default function Browse() {
             )}
           </div>
 
-          {/* Tabs */}
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-8 w-fit">
             {[
               { key: "all", label: "All" },
@@ -267,7 +228,6 @@ export default function Browse() {
             ))}
           </div>
 
-          {/* ===== USED LISTINGS ===== */}
           {(activeTab === "all" || activeTab === "used") && (
             <div className="mb-12">
               <div className="flex items-center gap-2 mb-4">
@@ -336,7 +296,6 @@ export default function Browse() {
             </div>
           )}
 
-          {/* ===== BUY NEW CATALOGUE ===== */}
           {(activeTab === "all" || activeTab === "new") && (
             <div>
               <div className="flex items-center gap-2 mb-4">
@@ -356,14 +315,13 @@ export default function Browse() {
 
         </div>
 
-        {/* Mobile drawer */}
         {showFilters && (
           <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex">
             <div className="bg-white w-72 max-w-full h-full p-5 shadow-xl overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold" style={{ fontFamily: "'DM Serif Display', serif" }}>Filters</h2>
                 <button onClick={() => setShowFilters(false)}><X size={18} /></button>
-            </div>
+              </div>
               {SidebarContent}
             </div>
             <div className="flex-1" onClick={() => setShowFilters(false)} />
@@ -372,4 +330,56 @@ export default function Browse() {
       </div>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  const supabaseUrl = "https://rvgfbbjclpaznfkfvcdl.supabase.co";
+  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2ZiYmpjbHBhem5ma2Z2Y2RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODUzMDksImV4cCI6MjA4OTE2MTMwOX0.NPUiVUqb_N5OCZpSIMpwKHU21rg-oDjjSxdPZSr421A";
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  const { data: listings } = await supabase
+    .from("listings")
+    .select(`*, listing_images (image_url, is_cover, display_order)`)
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+
+  const fragrances = (await import('../../data/fragrances')).default;
+
+  let apiData = [];
+  try {
+    const res = await fetch('https://api.fragella.com/api/v1/usage', {
+      headers: {
+        'x-api-key': '18e6a531cc3601a30464ce80825887be2b5d16c79690553b4d0520ee7952b6f2'
+      }
+    });
+    if (res.ok) {
+      const raw = await res.json();
+      apiData = Array.isArray(raw) ? raw : raw.data || raw.results || [];
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  const enriched = fragrances.map((item) => {
+    const match = apiData.find((apiItem) => {
+      const title = (apiItem.title || "").toLowerCase();
+      return title.includes(item.name.toLowerCase());
+    });
+    return {
+      ...item,
+      image:
+        match?.image_url ||
+        match?.image ||
+        match?.thumbnail ||
+        match?.img ||
+        item.image
+    };
+  });
+
+  return {
+    props: {
+      initialListings: listings || [],
+      initialFragrances: enriched
+    }
+  };
 }
