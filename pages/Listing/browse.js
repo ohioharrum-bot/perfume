@@ -1,83 +1,205 @@
 import { useRouter } from "next/router";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabaseClient";
-import { Filter, X, Search, ShoppingBag, Tag } from "lucide-react";
+import { Filter, X, Search, ShoppingBag, Tag, ExternalLink } from "lucide-react";
 import Head from "next/head";
-import { createClient } from "@supabase/supabase-js";
 
 const CONDITIONS = ["new", "like_new", "good", "fair"];
 const GENDERS = ["men", "women", "unisex"];
 
-function FragranceCard({ scent }) {
-  const [imgError, setImgError] = useState(false);
-  const router = useRouter();
+const POPULAR_BRANDS = [
+  "Creed", "Chanel", "Dior", "Tom Ford", "YSL",
+  "Versace", "Giorgio Armani", "Jo Malone", "Byredo",
+  "Maison Margiela", "Guerlain", "Hermès", "Prada",
+  "Viktor & Rolf", "Lancôme", "Marc Jacobs",
+  "Dolce & Gabbana", "Carolina Herrera", "Le Labo", "Diptyque"
+];
 
-  const imageUrl = imgError
-    ? `https://source.unsplash.com/featured/400x400?perfume-bottle`
-    : (scent.image || `https://source.unsplash.com/featured/400x400?${encodeURIComponent(scent.brand + ' ' + scent.name + ' perfume bottle')}`);
+const STORE_LABELS = {
+  fragrancenet: "FragranceNet",
+  amazon: "Amazon",
+  sephora: "Sephora",
+  ulta: "Ulta",
+  brand: "Brand Site",
+};
+
+function formatCondition(c) {
+  return { new: "New", like_new: "Like New", good: "Good", fair: "Fair" }[c] || c;
+}
+
+function getCoverImage(listing) {
+  if (!listing?.listing_images?.length) return null;
+  const cover = listing.listing_images.find((i) => i.is_cover);
+  return cover?.image_url || listing.listing_images[0]?.image_url;
+}
+
+// Map Fragella response to our format
+function mapFragrance(f) {
+  const name = f["Name"] || f.name || "";
+  const brand = f["Brand"] || f.brand || "";
+  const imageUrl = f["Image URL"] || f.image_url || "";
+
+  // build buy links from purchase URL if available
+  const purchaseUrl = f["Purchase URL"] || f.purchase_url || "";
+
+  return {
+    id: f["ID"] || f.id || `${brand}-${name}`.toLowerCase().replace(/\s+/g, "-"),
+    name,
+    brand,
+    family: (f["Main Accords"] || f.main_accords || [])[0] || "",
+    type: f["Type"] || f.type || "",
+    gender: (f["Gender"] || f.gender || "unisex").toLowerCase(),
+    price: f["Price"] || f.price || null,
+    image: imageUrl,
+    imageWebp: imageUrl ? imageUrl.replace(".jpg", ".webp") : "",
+    notes: [
+      ...(f["Top Notes"] || []).map((n) => n["Name"] || n),
+      ...(f["Middle Notes"] || []).map((n) => n["Name"] || n),
+      ...(f["Base Notes"] || []).map((n) => n["Name"] || n),
+    ].slice(0, 8),
+    accords: f["Main Accords"] || [],
+    longevity: f["Longevity"] || "",
+    sillage: f["Sillage"] || "",
+    description: f["Description"] || "",
+    purchaseUrl,
+    buyLinks: {
+      ...(purchaseUrl ? { brand: purchaseUrl } : {}),
+      amazon: `https://www.amazon.com/s?k=${encodeURIComponent(name + " " + brand)}`,
+      sephora: `https://www.sephora.com/search?keyword=${encodeURIComponent(name)}`,
+      ulta: `https://www.ulta.com/search?search=${encodeURIComponent(name)}`,
+      fragrancenet: `https://www.fragrancenet.com/search#/?q=${encodeURIComponent(name)}`,
+    },
+  };
+}
+
+function FragranceCard({ scent, onClick }) {
+  const [imgErr, setImgErr] = useState(false);
 
   return (
     <div
-      onClick={() => router.push(`/fragrances/${scent.id}`)}
+      onClick={onClick}
       className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
     >
-      <div className="aspect-square overflow-hidden bg-gray-100">
-        <img
-          src={imageUrl}
-          alt={scent.name}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
-        />
+      <div className="aspect-square bg-gray-50 overflow-hidden">
+        {scent.imageWebp && !imgErr ? (
+          <img
+            src={scent.imageWebp}
+            alt={scent.name}
+            className="w-full h-full object-cover"
+            onError={() => setImgErr(true)}
+          />
+        ) : scent.image && !imgErr ? (
+          <img
+            src={scent.image}
+            alt={scent.name}
+            className="w-full h-full object-cover"
+            onError={() => setImgErr(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[#1a1a18] gap-1">
+            <div className="text-xl font-bold text-[#b8973a]" style={{ fontFamily: "'DM Serif Display', serif" }}>
+              {scent.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+            </div>
+            <div className="text-[9px] uppercase tracking-widest text-[#b8973a] opacity-70 text-center px-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+              {scent.brand}
+            </div>
+          </div>
+        )}
       </div>
       <div className="p-3">
         <p className="text-xs font-medium text-gray-900 truncate" style={{ fontFamily: "'Poppins', sans-serif" }}>{scent.name}</p>
         <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>{scent.brand}</p>
         <div className="flex items-center justify-between mt-1">
-          <p className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>From ${scent.price}</p>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>{scent.family}</span>
+          {scent.price ? (
+            <p className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Poppins', sans-serif" }}>~${scent.price}</p>
+          ) : (
+            <p className="text-xs text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>View price</p>
+          )}
+          {scent.family && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 truncate max-w-[80px]" style={{ fontFamily: "'Poppins', sans-serif" }}>{scent.family}</span>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default function Browse({ initialListings = [], initialFragrances = [] }) {
+export default function Browse() {
   const router = useRouter();
 
+  // Search
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
 
-  const [listings, setListings] = useState(initialListings);
-  const [loadingListings, setLoadingListings] = useState(false);
-  const [fragrances, setFragrances] = useState(initialFragrances);
-  const [loadingFragrances, setLoadingFragrances] = useState(false);
+  // API fragrances
+  const [apiFragrances, setApiFragrances] = useState([]);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState("Creed");
+
+  // Selected scent for buy links panel
+  const [selectedScent, setSelectedScent] = useState(null);
+
+  // Listings
+  const [listings, setListings] = useState([]);
+  const [loadingListings, setLoadingListings] = useState(true);
   const [activeFilters, setActiveFilters] = useState({ brands: [], conditions: [], genders: [] });
   const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
 
+  // Unique brands from listings
+  const availableBrands = useMemo(() => {
+    const brands = new Set(listings.map(l => l.brand).filter(Boolean));
+    return Array.from(brands).sort();
+  }, [listings]);
+
+  // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 400);
     return () => clearTimeout(t);
   }, [searchQuery]);
 
-  const filteredFragrances = useMemo(() => {
-    if (loadingFragrances) return [];
-    let items = fragrances;
-    if (debouncedSearch) {
-      const term = debouncedSearch.toLowerCase();
-      items = items.filter(
-        (f) =>
-          f.name.toLowerCase().includes(term) ||
-          f.brand.toLowerCase().includes(term) ||
-          f.family.toLowerCase().includes(term) ||
-          (f.notes || []).some((n) => n.toLowerCase().includes(term))
-      );
+  // Fetch from Fragella API
+  const fetchFragrances = useCallback(async (params) => {
+    setApiLoading(true);
+    setApiFragrances([]);
+    try {
+      const qs = new URLSearchParams(params).toString();
+      const res = await fetch(`/api/fragrances?${qs}`);
+      const data = await res.json();
+      // Fragella returns array directly or wrapped
+      const arr = Array.isArray(data) ? data : data.fragrances || data.results || [];
+      setApiFragrances(arr.map(mapFragrance));
+    } catch (err) {
+      console.error("Fragella API error:", err);
     }
-    if (activeFilters.brands.length > 0) items = items.filter((f) => activeFilters.brands.includes(f.brand));
-    if (activeFilters.genders.length > 0) items = items.filter((f) => activeFilters.genders.includes(f.gender));
-    return items;
-  }, [fragrances, loadingFragrances, debouncedSearch, activeFilters]);
+    setApiLoading(false);
+  }, []);
+
+  // Search mode
+  useEffect(() => {
+    if (debouncedSearch) {
+      fetchFragrances({ search: debouncedSearch, limit: 30 });
+    } else {
+      // Default: load by selected brand
+      fetchFragrances({ brand: selectedBrand, limit: 30 });
+    }
+  }, [debouncedSearch, selectedBrand]);
+
+  // Fetch listings
+  useEffect(() => {
+    async function fetchListings() {
+      setLoadingListings(true);
+      const { data, error } = await supabase
+        .from("listings")
+        .select(`*, listing_images (image_url, is_cover, display_order)`)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (!error && data) setListings(data);
+      setLoadingListings(false);
+    }
+    fetchListings();
+  }, []);
 
   const filteredListings = useMemo(() => {
     let items = listings;
@@ -96,12 +218,6 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
     return items;
   }, [listings, debouncedSearch, activeFilters]);
 
-  const allBrands = useMemo(() => {
-    const fromFragrances = fragrances.map((f) => f.brand);
-    const fromListings = listings.map((l) => l.brand).filter(Boolean);
-    return Array.from(new Set([...fromFragrances, ...fromListings])).sort();
-  }, [fragrances, listings]);
-
   function toggleFilter(type, value) {
     setActiveFilters((prev) => {
       const current = prev[type];
@@ -110,27 +226,35 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
     });
   }
 
-  function clearFilters() {
-    setActiveFilters({ brands: [], conditions: [], genders: [] });
-  }
-
-  function getCoverImage(listing) {
-    if (!listing?.listing_images?.length) return null;
-    const cover = listing.listing_images.find((i) => i.is_cover);
-    return cover?.image_url || listing.listing_images[0]?.image_url;
-  }
-
-  function formatCondition(c) {
-    return { new: "New", like_new: "Like New", good: "Good", fair: "Fair" }[c] || c;
-  }
+  function clearFilters() { setActiveFilters({ brands: [], conditions: [], genders: [] }); }
 
   const SidebarContent = (
     <div className="h-full overflow-y-auto">
       <h2 className="text-lg font-semibold mb-4" style={{ fontFamily: "'DM Serif Display', serif" }}>Filters</h2>
+
+      {/* Brand picker for catalogue */}
       <div className="mb-6">
-        <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Brand</h3>
+        <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Browse by Brand</h3>
         <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-          {allBrands.map((b) => (
+          {POPULAR_BRANDS.map((b) => (
+            <button
+              key={b}
+              onClick={() => { setSelectedBrand(b); setSearchQuery(""); }}
+              className={`w-full text-left text-sm px-2 py-1 rounded-lg transition-colors ${selectedBrand === b && !debouncedSearch ? "bg-[#1a1a18] text-white" : "text-gray-700 hover:bg-gray-50"}`}
+              style={{ fontFamily: "'Poppins', sans-serif" }}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 my-4" />
+
+      <div className="mb-6">
+        <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Brand (used only)</h3>
+        <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
+          {availableBrands.map((b) => (
             <label key={b} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer" style={{ fontFamily: "'Poppins', sans-serif" }}>
               <input type="checkbox" className="accent-[var(--color-gold)]" checked={activeFilters.brands.includes(b)} onChange={() => toggleFilter("brands", b)} />
               {b}
@@ -138,6 +262,9 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
           ))}
         </div>
       </div>
+
+      <div className="border-t border-gray-100 my-4" />
+
       <div className="mb-6">
         <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Condition (used only)</h3>
         <div className="space-y-1">
@@ -149,6 +276,7 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
           ))}
         </div>
       </div>
+
       <div className="mb-6">
         <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Gender</h3>
         <div className="space-y-1">
@@ -160,6 +288,7 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
           ))}
         </div>
       </div>
+
       <button onClick={clearFilters} className="w-full border border-[var(--color-gold)] text-[var(--color-gold)] rounded-lg py-1.5 text-sm hover:bg-[var(--color-gold)] hover:text-white transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
         Clear All
       </button>
@@ -174,12 +303,15 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-10">
 
+        {/* Sidebar */}
         <aside className="hidden lg:block sticky self-start top-24 h-max rounded-2xl border bg-white shadow-sm p-5">
           {SidebarContent}
         </aside>
 
+        {/* Main */}
         <div>
 
+          {/* Desktop header */}
           <div className="hidden lg:flex items-center justify-between gap-4 mb-4">
             <h1 className="text-3xl font-semibold tracking-wide" style={{ fontFamily: "'DM Serif Display', serif" }}>Browse Fragrances</h1>
             <Link href="/Listing/createListing" className="px-4 py-2 bg-[#1a1a18] text-white text-sm rounded-xl hover:bg-black transition-colors" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -187,6 +319,7 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
             </Link>
           </div>
 
+          {/* Mobile header */}
           <div className="flex items-center justify-between mb-4 lg:hidden">
             <h1 className="text-2xl font-semibold tracking-wide" style={{ fontFamily: "'DM Serif Display', serif" }}>Browse</h1>
             <button onClick={() => setShowFilters(true)} className="flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm hover:bg-neutral-50" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -194,13 +327,14 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
             </button>
           </div>
 
+          {/* Search */}
           <div className="relative mb-6">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, brand, family, or notes..."
+              placeholder="Search 74,000+ fragrances by name, brand, or note..."
               className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 bg-white text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 shadow-sm transition-colors"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             />
@@ -211,11 +345,12 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
             )}
           </div>
 
+          {/* Tabs */}
           <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-8 w-fit">
             {[
               { key: "all", label: "All" },
               { key: "used", label: `Buy Used (${filteredListings.length})` },
-              { key: "new", label: `Buy New (${filteredFragrances.length})` },
+              { key: "new", label: `Buy New (${apiFragrances.length}${apiLoading ? "..." : ""})` },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -228,6 +363,7 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
             ))}
           </div>
 
+          {/* ===== USED LISTINGS ===== */}
           {(activeTab === "all" || activeTab === "used") && (
             <div className="mb-12">
               <div className="flex items-center gap-2 mb-4">
@@ -271,9 +407,7 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
                           {cover ? (
                             <img src={cover} alt={listing.title} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-gray-300 text-4xl">🫧</span>
-                            </div>
+                            <div className="w-full h-full flex items-center justify-center text-gray-200 text-4xl">🫧</div>
                           )}
                         </div>
                         <div className="p-3">
@@ -296,25 +430,145 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
             </div>
           )}
 
+          {/* ===== BUY NEW — from Fragella API ===== */}
           {(activeTab === "all" || activeTab === "new") && (
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <ShoppingBag size={15} className="text-gray-500" />
-                <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                  Buy New — {filteredFragrances.length} fragrances
-                </h3>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag size={15} className="text-gray-500" />
+                  <h3 className="text-xs font-medium uppercase tracking-wider text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    {debouncedSearch ? `Search results for "${debouncedSearch}"` : `${selectedBrand} fragrances`}
+                  </h3>
+                </div>
+                <span className="text-xs text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                  Powered by Fragella — 74k+ fragrances
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredFragrances.map((scent) => (
-                  <FragranceCard key={scent.id} scent={scent} />
-                ))}
+              {apiLoading && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="rounded-2xl border bg-white shadow-sm animate-pulse">
+                      <div className="aspect-square rounded-t-2xl bg-gray-100" />
+                      <div className="p-3 space-y-2">
+                        <div className="h-3 bg-gray-100 rounded w-3/4" />
+                        <div className="h-3 bg-gray-100 rounded w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!apiLoading && apiFragrances.length === 0 && (
+                <div className="text-center py-16">
+                  <p className="text-gray-400 text-sm" style={{ fontFamily: "'Poppins', sans-serif" }}>No fragrances found</p>
+                </div>
+              )}
+
+              {!apiLoading && apiFragrances.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {apiFragrances.map((scent, i) => (
+                    <FragranceCard
+                      key={scent.id || i}
+                      scent={scent}
+                      onClick={() => setSelectedScent(selectedScent?.id === scent.id ? null : scent)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== BUY LINKS PANEL ===== */}
+          {selectedScent && (
+            <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+                <div className="flex items-start gap-4 mb-5">
+                  {/* Image */}
+                  <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                    {selectedScent.imageWebp ? (
+                      <img src={selectedScent.imageWebp} alt={selectedScent.name} className="w-full h-full object-cover" onError={(e) => { e.target.src = selectedScent.image; }} />
+                    ) : (
+                      <div className="w-full h-full bg-[#1a1a18] flex items-center justify-center text-[#b8973a] font-bold text-lg" style={{ fontFamily: "'DM Serif Display', serif" }}>
+                        {selectedScent.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs uppercase tracking-wider text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>{selectedScent.brand}</p>
+                    <h3 className="text-lg font-normal text-gray-900" style={{ fontFamily: "'DM Serif Display', serif" }}>{selectedScent.name}</h3>
+                    {selectedScent.price && <p className="text-sm font-semibold text-gray-700 mt-0.5" style={{ fontFamily: "'Poppins', sans-serif" }}>~${selectedScent.price}</p>}
+                  </div>
+                  <button onClick={() => setSelectedScent(null)} className="text-gray-400 hover:text-gray-600 shrink-0">
+                    <X size={18} />
+                  </button>
+                </div>
+
+                {/* Notes */}
+                {selectedScent.notes?.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs uppercase tracking-wider text-gray-400 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Notes</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedScent.notes.map((n) => (
+                        <span key={n} className="text-[10px] px-2 py-1 rounded-full border border-gray-200 text-gray-600" style={{ fontFamily: "'Poppins', sans-serif" }}>{n}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Performance */}
+                {(selectedScent.longevity || selectedScent.sillage) && (
+                  <div className="flex gap-4 mb-4">
+                    {selectedScent.longevity && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>Longevity</p>
+                        <p className="text-xs text-gray-700 font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>{selectedScent.longevity}</p>
+                      </div>
+                    )}
+                    {selectedScent.sillage && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>Sillage</p>
+                        <p className="text-xs text-gray-700 font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>{selectedScent.sillage}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Buy links */}
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Where to buy new</p>
+                  <div className="flex flex-col gap-2">
+                    {Object.entries(selectedScent.buyLinks || {}).map(([store, url]) => (
+                      <a key={store} href={url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm transition-all">
+                        <span className="text-sm font-medium text-gray-800" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                          {STORE_LABELS[store] || store}
+                        </span>
+                        <ExternalLink size={14} className="text-gray-400" />
+                      </a>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-300 mt-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Prices may vary by retailer</p>
+                </div>
+
+                {/* Find used */}
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Want it cheaper? Find used listings on Scentd:</p>
+                  <button
+                    onClick={() => { setSearchQuery(selectedScent.name); setActiveTab("used"); setSelectedScent(null); }}
+                    className="w-full py-2.5 bg-[#1a1a18] text-white text-xs rounded-xl hover:bg-black transition-colors"
+                    style={{ fontFamily: "'Poppins', sans-serif" }}
+                  >
+                    Search used listings for "{selectedScent.name}" →
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
         </div>
 
+        {/* Mobile drawer */}
         {showFilters && (
           <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex">
             <div className="bg-white w-72 max-w-full h-full p-5 shadow-xl overflow-y-auto">
@@ -330,56 +584,4 @@ export default function Browse({ initialListings = [], initialFragrances = [] })
       </div>
     </>
   );
-}
-
-export async function getServerSideProps() {
-  const supabaseUrl = "https://rvgfbbjclpaznfkfvcdl.supabase.co";
-  const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2Z2ZiYmpjbHBhem5ma2Z2Y2RsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1ODUzMDksImV4cCI6MjA4OTE2MTMwOX0.NPUiVUqb_N5OCZpSIMpwKHU21rg-oDjjSxdPZSr421A";
-  const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-  const { data: listings } = await supabase
-    .from("listings")
-    .select(`*, listing_images (image_url, is_cover, display_order)`)
-    .eq("status", "active")
-    .order("created_at", { ascending: false });
-
-  const fragrances = (await import('../../data/fragrances')).default;
-
-  let apiData = [];
-  try {
-    const res = await fetch('https://api.fragella.com/api/v1/usage', {
-      headers: {
-        'x-api-key': '18e6a531cc3601a30464ce80825887be2b5d16c79690553b4d0520ee7952b6f2'
-      }
-    });
-    if (res.ok) {
-      const raw = await res.json();
-      apiData = Array.isArray(raw) ? raw : raw.data || raw.results || [];
-    }
-  } catch (e) {
-    console.error(e);
-  }
-
-  const enriched = fragrances.map((item) => {
-    const match = apiData.find((apiItem) => {
-      const title = (apiItem.title || "").toLowerCase();
-      return title.includes(item.name.toLowerCase());
-    });
-    return {
-      ...item,
-      image:
-        match?.image_url ||
-        match?.image ||
-        match?.thumbnail ||
-        match?.img ||
-        item.image
-    };
-  });
-
-  return {
-    props: {
-      initialListings: listings || [],
-      initialFragrances: enriched
-    }
-  };
 }

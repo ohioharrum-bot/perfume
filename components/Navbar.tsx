@@ -3,7 +3,6 @@ import Image from "next/image";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { Menu, X, User, MessageCircle } from "lucide-react";
-import fragrances from "../data/fragrances";
 import { supabase } from "../lib/supabaseClient";
 import ScentSearch from "../data/ScentSearch";
 
@@ -13,6 +12,7 @@ export default function Navbar() {
   const [debounced, setDebounced] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [fragrances, setFragrances] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const inputRef = useRef(null);
@@ -33,6 +33,14 @@ export default function Navbar() {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch fragrances for brands and notes
+  useEffect(() => {
+    fetch('/api/fragrances')
+      .then(res => res.json())
+      .then(data => setFragrances(data))
+      .catch(err => console.error('Failed to fetch fragrances:', err));
   }, []);
 
   // Fetch unread message count
