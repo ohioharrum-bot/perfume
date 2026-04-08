@@ -1,5 +1,4 @@
 import { useState } from "react";
-import fragrances from "@/data/fragrances";
 import Link from "next/link";
 import formatPrice from "@/lib/formatPrice";
 
@@ -19,41 +18,59 @@ export default function ScentFinder() {
     setNoResults(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, family, price } = answers;
-    let filtered = fragrances;
+    const { name, family, mood, price } = answers;
+    const searchTerm = (name || family || mood || "").trim();
 
-    if (name) {
-      const term = name.trim().toLowerCase();
-      filtered = filtered.filter(
-        (f) =>
-          f.name.toLowerCase().includes(term) ||
-          f.brand.toLowerCase().includes(term)
-      );
-    }
-
-    if (family) {
-      filtered = filtered.filter((f) =>
-        f.family.toLowerCase().includes(family.toLowerCase())
-      );
-    }
-
-    if (price) {
-      const maxPrice = parseInt(price);
-      filtered = filtered.filter((f) => f.price <= maxPrice);
-    }
-
-    if (filtered.length === 0) {
+    if (!searchTerm) {
       setResult(null);
       setNoResults(true);
       return;
     }
 
-    const suggestion = filtered[Math.floor(Math.random() * filtered.length)];
-    setResult(suggestion);
-    setNoResults(false);
+    try {
+      const response = await fetch(
+        `/api/fragrances?search=${encodeURIComponent(searchTerm)}&limit=100`
+      );
+      const data = await response.json();
+
+      const results = Array.isArray(data)
+        ? data
+        : Array.isArray(data.data)
+        ? data.data
+        : Array.isArray(data.fragrances)
+        ? data.fragrances
+        : [];
+
+      let filtered = results;
+
+      if (family) {
+        filtered = filtered.filter((f) =>
+          f.family?.toLowerCase().includes(family.toLowerCase())
+        );
+      }
+
+      if (price) {
+        const maxPrice = parseInt(price, 10);
+        filtered = filtered.filter((f) => Number(f.price) <= maxPrice);
+      }
+
+      if (filtered.length === 0) {
+        setResult(null);
+        setNoResults(true);
+        return;
+      }
+
+      const suggestion = filtered[Math.floor(Math.random() * filtered.length)];
+      setResult(suggestion);
+      setNoResults(false);
+    } catch (error) {
+      console.error("Scent Finder fetch failed:", error);
+      setResult(null);
+      setNoResults(true);
+    }
   };
 
   return (

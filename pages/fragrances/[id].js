@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import fragrances from "@/data/fragrances";
 import formatPrice from "@/lib/formatPrice";
 import { CheckCircle } from "lucide-react";
 
@@ -8,9 +8,47 @@ export default function FragranceDetail() {
   const router = useRouter();
   const { id } = router.query;
 
-  const fragrance = fragrances.find((f) => f.id === id);
+  const [fragrance, setFragrance] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!fragrance) {
+  useEffect(() => {
+    if (!id) return;
+
+    async function loadFragrance() {
+      setLoading(true);
+      setNotFound(false);
+
+      try {
+        const response = await fetch(`/api/fragrances/${encodeURIComponent(id)}`);
+        if (!response.ok) {
+          setNotFound(true);
+          setFragrance(null);
+          return;
+        }
+
+        const data = await response.json();
+        setFragrance(data);
+      } catch (error) {
+        console.error("Failed to load fragrance:", error);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadFragrance();
+  }, [id]);
+
+  if (!router.isReady || loading) {
+    return (
+      <div className="mx-auto max-w-4xl px-6 sm:px-8 py-20 text-center">
+        <p className="text-gray-500">Loading fragrance...</p>
+      </div>
+    );
+  }
+
+  if (notFound || !fragrance) {
     return (
       <div className="mx-auto max-w-4xl px-6 sm:px-8 py-20 text-center">
         <p className="text-gray-500 animate-ss-up">Fragrance not found.</p>
@@ -24,21 +62,9 @@ export default function FragranceDetail() {
     );
   }
 
-  const listings = fragrance.listings || [];
-
-  const lowest =
-    listings.length > 0
-      ? Math.min(...listings.map((l) => l.price))
-      : fragrance.price;
-
-  const similar = fragrances
-    .filter(
-      (f) =>
-        f.id !== fragrance.id &&
-        (f.family === fragrance.family ||
-          f.notes.some((n) => fragrance.notes.includes(n)))
-    )
-    .slice(0, 3);
+  const notes = Array.isArray(fragrance.notes) ? fragrance.notes : [];
+  const listings = Array.isArray(fragrance.listings) ? fragrance.listings : [];
+  const lowest = listings.length > 0 ? Math.min(...listings.map((l) => l.price)) : fragrance.price;
 
   const trustedRetailers = [
     {
@@ -60,7 +86,6 @@ export default function FragranceDetail() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 animate-ss-fade-slow">
-      {/* Back Link */}
       <div className="mb-6">
         <Link
           href="/browse"
@@ -70,13 +95,16 @@ export default function FragranceDetail() {
         </Link>
       </div>
 
-      {/* ===== Main Info Section ===== */}
       <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-        {/* Left: Image */}
         <div className="flex-1 max-w-md mx-auto lg:mx-0">
           <div className="aspect-square overflow-hidden rounded-2xl border shadow-sm bg-white">
             <img
-              src={fragrance.image || `https://source.unsplash.com/featured/600x600?${encodeURIComponent(fragrance.brand + ' ' + fragrance.name + ' perfume bottle')}`}
+              src={
+                fragrance.image ||
+                `https://source.unsplash.com/featured/600x600?${encodeURIComponent(
+                  fragrance.brand + " " + fragrance.name + " perfume bottle"
+                )}`
+              }
               alt={fragrance.name}
               className="w-full h-full object-cover"
               onError={(e) => {
@@ -86,34 +114,27 @@ export default function FragranceDetail() {
           </div>
         </div>
 
-        {/* Right: Details */}
         <div className="flex-1">
           <h1 className="font-[var(--font-playfair)] text-3xl sm:text-4xl font-semibold text-gray-900 mb-2">
             {fragrance.name}
           </h1>
-          <h2 className="text-base sm:text-lg text-gray-600 mb-6">
-            {fragrance.brand}
-          </h2>
+          <h2 className="text-base sm:text-lg text-gray-600 mb-6">{fragrance.brand}</h2>
 
           <div className="border-t border-b border-gray-200 py-4 mb-6 text-sm sm:text-base">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <div className="text-gray-700">
-                <span className="font-medium">Family:</span>{" "}
-                {fragrance.family}
+                <span className="font-medium">Family:</span> {fragrance.family}
               </div>
               <div className="text-gray-700">
-                <span className="font-medium">MSRP:</span>{" "}
-                {formatPrice(fragrance.price)}
+                <span className="font-medium">MSRP:</span> {formatPrice(fragrance.price)}
               </div>
             </div>
           </div>
 
           <div className="mb-6">
-            <span className="font-medium text-gray-800 text-sm sm:text-base">
-              Notes:
-            </span>
+            <span className="font-medium text-gray-800 text-sm sm:text-base">Notes:</span>
             <div className="mt-2 flex flex-wrap gap-2">
-              {fragrance.notes.map((n) => (
+              {notes.map((n) => (
                 <span
                   key={n}
                   className="text-xs sm:text-sm px-3 py-1 rounded-full border bg-neutral-50"
@@ -130,7 +151,6 @@ export default function FragranceDetail() {
         </div>
       </div>
 
-      {/* ===== SureScent Listings ===== */}
       <div className="my-14 border-t border-gray-200 relative">
         <div className="absolute inset-0 flex justify-center">
           <span className="bg-white px-4 -translate-y-3 text-[var(--color-gold)] text-xs uppercase tracking-wide font-semibold">
@@ -169,7 +189,6 @@ export default function FragranceDetail() {
         )}
       </div>
 
-      {/* ===== Trusted Retailers ===== */}
       <div className="mt-20 border-t border-gray-200 relative">
         <div className="absolute inset-0 flex justify-center">
           <span className="bg-white px-4 -translate-y-3 text-[var(--color-gold)] text-xs uppercase tracking-wide font-semibold">
@@ -196,14 +215,11 @@ export default function FragranceDetail() {
               <div className="absolute inset-0 rounded-full border border-transparent group-hover:border-[var(--color-gold)] transition-all" />
             </div>
             <div className="font-medium text-gray-900">{r.name}</div>
-            <span className="text-sm text-[var(--color-gold)] mt-1">
-              Visit Site →
-            </span>
+            <span className="text-sm text-[var(--color-gold)] mt-1">Visit Site →</span>
           </a>
         ))}
       </div>
 
-      {/* ===== Description Section ===== */}
       <div className="mt-20 max-w-3xl mx-auto text-center px-2">
         <h3 className="font-[var(--font-playfair)] text-2xl sm:text-3xl font-semibold mb-4">
           About {fragrance.name}
@@ -213,50 +229,6 @@ export default function FragranceDetail() {
             "A timeless composition blending exquisite notes to evoke confidence and sophistication. Each bottle tells a story — crafted for those who appreciate refinement and individuality."}
         </p>
       </div>
-
-      {/* ===== You May Also Like ===== */}
-      {similar.length > 0 && (
-        <div className="mt-20">
-          <h3 className="font-[var(--font-playfair)] text-2xl sm:text-3xl font-semibold text-center mb-10">
-            You May Also Like
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {similar.map((f) => {
-              const fListings = f.listings || [];
-              const lowest =
-                fListings.length > 0
-                  ? Math.min(...fListings.map((l) => l.price))
-                  : f.price;
-
-              return (
-                <div
-                  key={f.id}
-                  className="rounded-2xl border bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="aspect-square mb-3 overflow-hidden rounded-xl">
-                    <img
-                      src={f.image}
-                      alt={f.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="text-lg font-semibold">{f.name}</div>
-                  <div className="text-sm text-gray-500">{f.brand}</div>
-                  <div className="text-sm font-medium mt-2">
-                    From {formatPrice(lowest)}
-                  </div>
-                  <Link
-                    href={`/fragrances/${f.id}`}
-                    className="mt-3 inline-block text-sm hover:text-[var(--color-gold)] transition-colors"
-                  >
-                    View details →
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
