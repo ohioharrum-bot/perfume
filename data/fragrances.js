@@ -1,3 +1,3 @@
-const fragrances = [];
-
-export default fragrances;
+export default async function handler(req, res) {
+  res.status(200).json([]);
+}

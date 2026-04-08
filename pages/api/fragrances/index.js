@@ -13,8 +13,7 @@ export default async function handler(req, res) {
     // GET /fragrances?search=...
     url = `${BASE}/fragrances?search=${encodeURIComponent(search)}&limit=${limit}`;
   } else {
-    // GET all — Fragella doesn't have a plain "all" endpoint so we fetch with empty search
-    url = `${BASE}/fragrances?search=&limit=50`;
+    return res.status(400).json({ error: "Provide search or brand param" });
   }
 
   try {
