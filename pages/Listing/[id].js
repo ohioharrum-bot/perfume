@@ -127,7 +127,7 @@ export default function ListingDetail() {
     return (
       <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center justify-center gap-4">
         <p className="text-gray-500 text-sm" style={{ fontFamily: "'Poppins', sans-serif" }}>Listing not found.</p>
-        <Link href="/browse" className="text-sm underline text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>Back to browse</Link>
+        <Link href="/Listing/browse" className="text-sm underline text-gray-400" style={{ fontFamily: "'Poppins', sans-serif" }}>Back to browse</Link>
       </div>
     );
   }
@@ -282,7 +282,7 @@ export default function ListingDetail() {
                   <button
                     onClick={async () => {
                       await supabase.from("listings").update({ status: "sold" }).eq("id", listing.id);
-                      router.push("/browse");
+                      router.push("/Listing/browse");
                     }}
                     className="flex-1 py-3.5 rounded-xl bg-gray-900 text-white text-sm font-medium hover:bg-black transition-colors"
                     style={{ fontFamily: "'Poppins', sans-serif" }}>

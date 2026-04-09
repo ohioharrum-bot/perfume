@@ -685,7 +685,7 @@ export default function Browse() {
                   className="text-xs font-medium uppercase tracking-wider text-gray-500"
                   style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
-                  Buy Used on Scentd — save up to 60%
+                  Buy Used — save up to 60%
                 </h3>
               </div>
 
@@ -804,7 +804,7 @@ export default function Browse() {
                   className="text-xs text-gray-400"
                   style={{ fontFamily: "'Poppins', sans-serif" }}
                 >
-                  Powered by Fragella — 74k+ fragrances
+                  Browse a wide selection of fragrances
                 </span>
               </div>
 
@@ -1008,7 +1008,7 @@ export default function Browse() {
                     className="text-xs text-gray-500 mb-2"
                     style={{ fontFamily: "'Poppins', sans-serif" }}
                   >
-                    Want it cheaper? Find used listings on Scentd:
+                    Want it cheaper? Find used listings:
                   </p>
                   <button
                     onClick={() => {

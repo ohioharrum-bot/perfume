@@ -196,7 +196,7 @@ export default function Messages() {
                   <MessageCircle size={32} className="text-gray-300" />
                   <p className="text-gray-400 text-sm">No conversations yet.</p>
                   <Link
-                    href="/browse"
+                    href="/Listing/browse"
                     className="text-xs px-4 py-2 bg-[#1a1a18] text-white rounded-xl hover:bg-black transition-colors"
                   >
                     Browse listings
@@ -247,7 +247,7 @@ export default function Messages() {
                   </p>
                 </div>
                 <Link
-                  href="/browse"
+                  href="/Listing/browse"
                   className="px-5 py-2.5 bg-[#1a1a18] text-white text-sm rounded-xl hover:bg-black transition-colors"
                 >
                   Browse listings

@@ -22,7 +22,7 @@ export default function ScentFinder() {
     e.preventDefault();
 
     const { name, family, mood, price } = answers;
-    const searchTerm = (name || family || mood || "").trim();
+    const searchTerm = [name, family, mood].filter(Boolean).join(" ").trim();
 
     if (!searchTerm) {
       setResult(null);
@@ -31,25 +31,138 @@ export default function ScentFinder() {
     }
 
     try {
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-rapidapi-host": "fragrance-api.p.rapidapi.com",
+          "x-rapidapi-key": "43adc8b128msh3533d6e30965f42p19e94ejsnb8ccbfcc6d07",
+        },
+        body: JSON.stringify({
+          queries: [
+            {
+              indexUid: "fragrances",
+              q: searchTerm || "Chanel",
+              facets: ["brand.name", "notes.name", "perfumers.name", "releasedAt"],
+              limit: 100,
+              offset: 0,
+            },
+          ],
+        }),
+      };
+
       const response = await fetch(
-        `/api/fragrances?search=${encodeURIComponent(searchTerm)}&limit=100`
+        "https://fragrance-api.p.rapidapi.com/multi-search",
+        options
       );
       const data = await response.json();
+      const hits = data?.results?.[0]?.hits || [];
 
-      const results = Array.isArray(data)
-        ? data
-        : Array.isArray(data.data)
-        ? data.data
-        : Array.isArray(data.fragrances)
-        ? data.fragrances
-        : [];
+      const results = hits.map((f) => ({
+        id:
+          f.id ||
+          `${f.brand?.name || ""}-${f.name}`
+            .toLowerCase()
+            .replace(/\s+/g, "-"),
+        name: f.name || "",
+        brand: f.brand?.name || "",
+        family: f.accords?.[0] || "",
+        type: f.type || "",
+        gender: (f.gender || "unisex").toLowerCase(),
+        price: f.price || null,
+        image: f.image?.url || "",
+        notes: f.notes?.map((n) => n.name) || [],
+        accords: f.accords || [],
+        longevity: f.longevity || "",
+        sillage: f.sillage || "",
+        description: f.description || "",
+      }));
+
+      const normalizeText = (value) =>
+        String(value || "").toLowerCase();
+
+      const matchesFamily = (fragrance, familyValue) => {
+        const normalizedFamily = familyValue.toLowerCase();
+        const familyText = normalizeText(fragrance.family);
+        const notesText = normalizeText(fragrance.notes?.join(" "));
+        const descriptionText = normalizeText(fragrance.description);
+        const nameText = normalizeText(fragrance.name);
+
+        return (
+          familyText.includes(normalizedFamily) ||
+          notesText.includes(normalizedFamily) ||
+          descriptionText.includes(normalizedFamily) ||
+          nameText.includes(normalizedFamily)
+        );
+      };
+
+      const matchesMood = (fragrance, moodValue) => {
+        const normalizedMood = moodValue.toLowerCase();
+        const familyText = normalizeText(fragrance.family);
+        const notesText = normalizeText(fragrance.notes?.join(" "));
+        const descriptionText = normalizeText(fragrance.description);
+        const nameText = normalizeText(fragrance.name);
+
+        if (normalizedMood === "fresh") {
+          return (
+            familyText.includes("citrus") ||
+            familyText.includes("green") ||
+            familyText.includes("aquatic") ||
+            notesText.includes("fresh") ||
+            descriptionText.includes("fresh") ||
+            nameText.includes("fresh")
+          );
+        }
+
+        if (normalizedMood === "warm") {
+          return (
+            familyText.includes("amber") ||
+            familyText.includes("woody") ||
+            notesText.includes("warm") ||
+            notesText.includes("spice") ||
+            descriptionText.includes("warm") ||
+            nameText.includes("warm")
+          );
+        }
+
+        if (normalizedMood === "romantic") {
+          return (
+            familyText.includes("floral") ||
+            notesText.includes("rose") ||
+            notesText.includes("floral") ||
+            notesText.includes("sweet") ||
+            descriptionText.includes("romantic") ||
+            nameText.includes("romantic")
+          );
+        }
+
+        if (normalizedMood === "bold") {
+          return (
+            familyText.includes("oud") ||
+            familyText.includes("leather") ||
+            notesText.includes("spicy") ||
+            notesText.includes("amber") ||
+            descriptionText.includes("bold") ||
+            nameText.includes("bold")
+          );
+        }
+
+        return (
+          familyText.includes(normalizedMood) ||
+          notesText.includes(normalizedMood) ||
+          descriptionText.includes(normalizedMood) ||
+          nameText.includes(normalizedMood)
+        );
+      };
 
       let filtered = results;
 
       if (family) {
-        filtered = filtered.filter((f) =>
-          f.family?.toLowerCase().includes(family.toLowerCase())
-        );
+        filtered = filtered.filter((f) => matchesFamily(f, family));
+      }
+
+      if (mood) {
+        filtered = filtered.filter((f) => matchesMood(f, mood));
       }
 
       if (price) {
@@ -212,7 +325,9 @@ export default function ScentFinder() {
               </p>
 
               <Link
-                href={`/fragrance/${result.id}`}
+                href={`/fragrances/${result.id}?source=rapidapi&name=${encodeURIComponent(
+                  result.name
+                )}&brand=${encodeURIComponent(result.brand)}`}
                 className="inline-block rounded-xl border border-black px-8 py-3 text-sm font-medium hover:bg-black hover:text-white transition-all"
               >
                 View Details
@@ -235,7 +350,7 @@ export default function ScentFinder() {
 
       <section className="mx-auto max-w-4xl px-6 sm:px-8 py-16 text-center border-t border-neutral-200">
         <Link
-          href="/browse"
+          href="/Listing/browse"
           className="inline-block rounded-xl border border-black px-8 py-3 text-sm font-medium hover:bg-black hover:text-white transition-all"
         >
           ← Back to Browse

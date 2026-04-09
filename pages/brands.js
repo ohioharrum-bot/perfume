@@ -35,7 +35,7 @@ export default function Home() {
 
               <div className="mt-6 flex items-center gap-3">
                 <Link
-                  href="/browse"
+                  href="/Listing/browse"
                   className="rounded-xl border px-5 py-3 text-sm font-medium hover:opacity-80"
                 >
                   Browse fragrances

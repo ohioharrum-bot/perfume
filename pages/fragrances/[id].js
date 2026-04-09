@@ -12,6 +12,76 @@ export default function FragranceDetail() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  const fetchRapidApiFragrance = async (name, brand, fetchId) => {
+    if (!name || !brand) return null;
+
+    try {
+      const response = await fetch("https://fragrance-api.p.rapidapi.com/multi-search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-rapidapi-host": "fragrance-api.p.rapidapi.com",
+          "x-rapidapi-key": "43adc8b128msh3533d6e30965f42p19e94ejsnb8ccbfcc6d07",
+        },
+        body: JSON.stringify({
+          queries: [
+            {
+              indexUid: "fragrances",
+              q: `${name} ${brand}`,
+              facets: ["brand.name", "notes.name", "perfumers.name", "releasedAt"],
+              limit: 20,
+              offset: 0,
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      const hits = data?.results?.[0]?.hits || [];
+      let hit = null;
+
+      if (fetchId) {
+        hit = hits.find((item) => String(item.id) === String(fetchId));
+      }
+
+      if (!hit) {
+        hit = hits.find(
+          (item) =>
+            item.name === name && item.brand?.name === brand,
+        );
+      }
+
+      if (!hit) {
+        hit = hits[0] || null;
+      }
+
+      if (!hit) return null;
+
+      return {
+        id: hit.id,
+        name: hit.name || "",
+        brand: hit.brand?.name || "",
+        family: hit.accords?.[0] || "",
+        type: hit.type || "",
+        gender: (hit.gender || "unisex").toLowerCase(),
+        price: hit.price || null,
+        image: hit.image?.url || "",
+        notes: hit.notes?.map((n) => n.name) || [],
+        accords: hit.accords || [],
+        longevity: hit.longevity || "",
+        sillage: hit.sillage || "",
+        description: hit.description || "",
+        purchaseUrl: hit.purchase_url || "",
+        listings: [],
+      };
+    } catch (error) {
+      console.error("RapidAPI fragrance detail error:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     if (!id) return;
 
@@ -19,9 +89,32 @@ export default function FragranceDetail() {
       setLoading(true);
       setNotFound(false);
 
+      const queryName = router.query.name;
+      const queryBrand = router.query.brand;
+      const querySource = router.query.source;
+
+      if (querySource === "rapidapi" && queryName && queryBrand) {
+        const rapidFragrance = await fetchRapidApiFragrance(queryName, queryBrand, id);
+
+        if (rapidFragrance) {
+          setFragrance(rapidFragrance);
+          setLoading(false);
+          return;
+        }
+      }
+
       try {
         const response = await fetch(`/api/fragrances/${encodeURIComponent(id)}`);
         if (!response.ok) {
+          if (queryName && queryBrand) {
+            const rapidFragrance = await fetchRapidApiFragrance(queryName, queryBrand, id);
+            if (rapidFragrance) {
+              setFragrance(rapidFragrance);
+              setLoading(false);
+              return;
+            }
+          }
+
           setNotFound(true);
           setFragrance(null);
           return;
@@ -31,6 +124,14 @@ export default function FragranceDetail() {
         setFragrance(data);
       } catch (error) {
         console.error("Failed to load fragrance:", error);
+        if (queryName && queryBrand) {
+          const rapidFragrance = await fetchRapidApiFragrance(queryName, queryBrand, id);
+          if (rapidFragrance) {
+            setFragrance(rapidFragrance);
+            setLoading(false);
+            return;
+          }
+        }
         setNotFound(true);
       } finally {
         setLoading(false);
@@ -38,7 +139,7 @@ export default function FragranceDetail() {
     }
 
     loadFragrance();
-  }, [id]);
+  }, [id, router.query]);
 
   if (!router.isReady || loading) {
     return (
@@ -53,7 +154,7 @@ export default function FragranceDetail() {
       <div className="mx-auto max-w-4xl px-6 sm:px-8 py-20 text-center">
         <p className="text-gray-500 animate-ss-up">Fragrance not found.</p>
         <Link
-          href="/browse"
+          href="/Listing/browse"
           className="mt-6 inline-block text-sm text-[var(--color-gold)] hover:underline"
         >
           Back to Browse
@@ -88,7 +189,7 @@ export default function FragranceDetail() {
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 animate-ss-fade-slow">
       <div className="mb-6">
         <Link
-          href="/browse"
+          href="/Listing/browse"
           className="text-sm text-gray-500 hover:text-[var(--color-gold)] transition-colors"
         >
           ← Back to Browse

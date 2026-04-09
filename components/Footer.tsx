@@ -24,7 +24,7 @@ export default function Footer() {
               <Link href="/" className="hover:text-[var(--color-gold)] transition-colors">
                 Home
               </Link>
-              <Link href="/browse" className="hover:text-[var(--color-gold)] transition-colors">
+              <Link href="/Listing/browse" className="hover:text-[var(--color-gold)] transition-colors">
                 Browse
               </Link>
               <Link href="/scent-finder" className="hover:text-[var(--color-gold)] transition-colors">

@@ -25,7 +25,7 @@ export default function Custom404() {
             ← Back to Home
           </Link>
           <Link
-            href="/browse"
+            href="/Listing/browse"
             className="rounded-xl border border-black/70 px-8 py-3 text-sm font-medium hover:bg-black/80 hover:text-white transition-all"
           >
             Browse Fragrances

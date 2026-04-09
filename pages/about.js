@@ -1,8 +1,14 @@
 import Link from "next/link";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export default function About() {
   return (
-    <div className="bg-gradient-to-b from-[#fffaf5] to-white min-h-screen font-[var(--font-lora)]">
+    <div className={`bg-gradient-to-b from-[#fffaf5] to-white min-h-screen ${poppins.className}`}>
       {/* ===== Header Section ===== */}
       <section className="mx-auto max-w-5xl px-6 sm:px-8 py-20 text-center">
         <h1 className="font-[var(--font-cormorant)] text-5xl sm:text-6xl font-semibold text-gray-900 mb-6">
@@ -53,26 +59,23 @@ export default function About() {
         <h2 className="font-[var(--font-cormorant)] text-3xl font-semibold mb-10">
           What We Stand For
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
-          <div className="p-6 rounded-3xl bg-white shadow-sm border">
-            <div className="text-4xl mb-3">🤝</div>
-            <h3 className="font-semibold text-lg mb-2">Authenticity</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="p-8 rounded-3xl bg-white shadow-xl border border-gray-200">
+            <h3 className="font-semibold text-xl mb-3">Authenticity</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               Every listing is verified for authenticity and quality. We value trust
               above everything.
             </p>
           </div>
-          <div className="p-6 rounded-3xl bg-white shadow-sm border">
-            <div className="text-4xl mb-3">💎</div>
-            <h3 className="font-semibold text-lg mb-2">Transparency</h3>
+          <div className="p-8 rounded-3xl bg-white shadow-xl border border-gray-200">
+            <h3 className="font-semibold text-xl mb-3">Transparency</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               We believe in honest pricing and clear comparisons, so you can make
               confident choices.
             </p>
           </div>
-          <div className="p-6 rounded-3xl bg-white shadow-sm border">
-            <div className="text-4xl mb-3">🌿</div>
-            <h3 className="font-semibold text-lg mb-2">Discovery</h3>
+          <div className="p-8 rounded-3xl bg-white shadow-xl border border-gray-200">
+            <h3 className="font-semibold text-xl mb-3">Discovery</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               Fragrance is a journey. SureScent helps you explore new scents and rediscover
               timeless classics.
@@ -92,7 +95,7 @@ export default function About() {
           on appreciation, authenticity, and passion.
         </p>
         <Link
-          href="/browse"
+          href="/Listing/browse"
           className="inline-block rounded-xl border border-black px-8 py-3 text-sm font-medium hover:bg-black hover:text-white transition-all"
         >
           Start Browsing
