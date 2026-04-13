@@ -17,6 +17,7 @@ export default function Messages() {
   const [loadingConvos, setLoadingConvos] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
+  const [flagWarning, setFlagWarning] = useState(false);
   const bottomRef = useRef(null);
 
   // 1. Auth
@@ -99,6 +100,7 @@ export default function Messages() {
 
   function selectConvo(convo) {
     setActiveConvo(convo);
+    setFlagWarning(false);
     router.push(`/messages?id=${convo.id}`, undefined, { shallow: true });
   }
 
@@ -110,14 +112,25 @@ export default function Messages() {
     e.preventDefault();
     if (!newMessage.trim() || !activeConvo) return;
     setSending(true);
+    setFlagWarning(false);
 
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: activeConvo.id,
-      sender_id: user.id,
-      body: newMessage.trim(),
+    const res = await fetch("/api/send-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        conversation_id: activeConvo.id,
+        sender_id: user.id,
+        body: newMessage.trim(),
+      }),
     });
 
-    if (!error) setNewMessage("");
+    const data = await res.json();
+
+    if (res.ok) {
+      setNewMessage("");
+      if (data.flagged) setFlagWarning(true);
+    }
+
     setSending(false);
     scrollToBottom();
   }
@@ -313,6 +326,12 @@ export default function Messages() {
                           }`}>
                             {msg.body}
                           </div>
+                          {/* Flag indicator on the message bubble */}
+                          {msg.is_flagged && isMe && (
+                            <span className="text-[10px] text-amber-500 px-1 flex items-center gap-1">
+                              ⚠️ Flagged for review
+                            </span>
+                          )}
                           {showTime && (
                             <span className="text-[10px] text-gray-400 px-1">{formatTime(msg.sent_at)}</span>
                           )}
@@ -322,6 +341,26 @@ export default function Messages() {
                   })}
                   <div ref={bottomRef} />
                 </div>
+
+                {/* Flag warning banner */}
+                {flagWarning && (
+                  <div className="mx-4 mb-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+                    <span className="text-amber-500 mt-0.5 shrink-0 text-base">⚠️</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-amber-800">Message flagged for review</p>
+                      <p className="text-xs text-amber-600 mt-0.5">
+                        Your message may contain contact info or off-platform payment details.
+                        Please keep all transactions within Scentd.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setFlagWarning(false)}
+                      className="text-amber-400 hover:text-amber-600 shrink-0 text-xl leading-none mt-0.5"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
 
                 {/* Message input */}
                 <form onSubmit={sendMessage} className="px-4 py-3 border-t border-gray-100 bg-white flex items-end gap-3 shrink-0">
