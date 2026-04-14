@@ -16,12 +16,10 @@ export default function AuthCallback() {
           return;
         }
 
-        if (data.session) {
-          // Successfully authenticated, redirect to profile or home
+        if (data?.session) {
           router.push("/profile");
         } else {
-          // No session found, redirect to login
-          router.push("/login");
+          router.push("/login?error=auth_callback_error");
         }
       } catch (err) {
         console.error("Unexpected error in auth callback:", err);

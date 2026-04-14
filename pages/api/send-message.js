@@ -20,15 +20,13 @@ function levenshtein(a, b) {
   return matrix[b.length][a.length];
 }
 
-// Check if a word is close enough to a target (typo tolerant)
+
 function isFuzzyMatch(word, target) {
   if (word.length < 3) return false;
   const maxDist = target.length <= 5 ? 1 : 2; // allow 1 typo for short words, 2 for longer
   return levenshtein(word.toLowerCase(), target.toLowerCase()) <= maxDist;
 }
 
-// ── Off-platform keywords (US-focused) ──
-// These are checked as exact substrings (fast)
 const EXACT_PATTERNS = [
   /whats?\s*app/i,
   /\btelegram\b/i,
@@ -102,7 +100,6 @@ function fuzzyCheck(message) {
 }
 
 function checkOffPlatform(message) {
-  // 1. Exact regex patterns
   for (const pattern of EXACT_PATTERNS) {
     if (pattern.test(message)) {
       return { flagged: true, reason: `Contains off-platform indicator` };

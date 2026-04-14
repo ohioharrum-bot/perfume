@@ -7,9 +7,10 @@ import Head from "next/head";
 export default function Login() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ full_name: "", email: "", password: "" });
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", role: "buyer" });
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -38,7 +39,10 @@ export default function Login() {
           email: form.email,
           password: form.password,
           options: {
-            data: { full_name: form.full_name },
+            data: {
+              full_name: form.full_name,
+              role: form.role,
+            },
           },
         });
         if (error) throw error;
@@ -262,6 +266,33 @@ export default function Login() {
                 />
               </div>
 
+              {!isLogin && (
+                <div className="mb-4">
+                  <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    Choose your account type
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: "buyer", label: "Buyer" },
+                      { value: "seller", label: "Seller" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => set("role", option.value)}
+                        className={`py-3 rounded-xl border text-sm font-medium transition-colors ${
+                          form.role === option.value
+                            ? "bg-[#1a1a18] border-[#1a1a18] text-white"
+                            : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                        }`}
+                        style={{ fontFamily: "'Poppins', sans-serif" }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-medium text-gray-600 uppercase tracking-wider" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -273,14 +304,23 @@ export default function Login() {
                     </Link>
                   )}
                 </div>
-                <input
-                  type="password"
-                  placeholder={isLogin ? "••••••••" : "Min. 6 characters"}
-                  value={form.password}
-                  onChange={(e) => set("password", e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-[#fafaf9] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
-                  style={{ fontFamily: "'Poppins', sans-serif" }}
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder={isLogin ? "••••••••" : "Min. 6 characters"}
+                    value={form.password}
+                    onChange={(e) => set("password", e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-[#fafaf9] text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
+                    style={{ fontFamily: "'Poppins', sans-serif" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
               </div>
 
               {error && (

@@ -26,6 +26,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [stripeConnecting, setStripeConnecting] = useState(false);
+  const [stripeConnectMessage, setStripeConnectMessage] = useState("");
+  const [stripeStatus, setStripeStatus] = useState(null);
 
   const [editForm, setEditForm] = useState({
     full_name: "",
@@ -40,8 +43,26 @@ export default function Profile() {
       setUser(session.user);
       fetchProfile(session.user.id);
       fetchListings(session.user.id);
+      fetchStripeStatus(session.user.id);
     });
   }, []);
+
+  useEffect(() => {
+    const stripeStatus = router.query.stripe_status;
+    if (!stripeStatus || !user) return;
+
+    if (stripeStatus === "success") {
+      setStripeConnectMessage("Stripe account connected successfully.");
+      fetchProfile(user.id);
+      fetchStripeStatus(user.id);
+    } else if (stripeStatus === "refresh") {
+      setStripeConnectMessage("Stripe onboarding refreshed. Please complete setup.");
+      fetchProfile(user.id);
+      fetchStripeStatus(user.id);
+    }
+
+    router.replace("/profile", undefined, { shallow: true });
+  }, [router.query.stripe_status, user]);
 
   async function fetchProfile(userId) {
     const { data } = await supabase
@@ -110,6 +131,22 @@ export default function Profile() {
     setUploadingAvatar(false);
   }
 
+  async function fetchStripeStatus(userId) {
+    try {
+      const res = await fetch("/api/stripe-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStripeStatus(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch Stripe status:", err);
+    }
+  }
+
   async function handleSignOut() {
     await supabase.auth.signOut();
     router.push("/login");
@@ -123,6 +160,30 @@ export default function Profile() {
   async function deleteListing(listingId) {
     await supabase.from("listings").update({ status: "deleted" }).eq("id", listingId);
     setListings((prev) => prev.filter((l) => l.id !== listingId));
+  }
+
+  async function handleStripeConnect() {
+    setStripeConnecting(true);
+    setStripeConnectMessage("");
+
+    try {
+      const res = await fetch("/api/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id, email: user.email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setStripeConnectMessage(data.error || "Unable to connect Stripe.");
+      } else if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setStripeConnectMessage(err.message || "Unable to connect Stripe.");
+    }
+
+    setStripeConnecting(false);
   }
 
   const filtered = listings.filter((l) => {
@@ -271,6 +332,36 @@ export default function Profile() {
               )}
             </div>
           </div>
+
+          {!editing && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Stripe payout account</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Sellers use this to receive payments on the platform. Connect once from your profile.
+                  </p>
+                  {stripeStatus && (
+                    <p className={`text-xs mt-1 ${stripeStatus.connected ? 'text-green-600' : 'text-amber-600'}`}>
+                      {stripeStatus.connected ? '✓ Onboarding completed - account ready for payments' : stripeStatus.status === 'incomplete' ? '⚠ Setup incomplete - please complete onboarding' : 'Not connected'}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col items-start sm:items-end gap-2">
+                  <button
+                    onClick={handleStripeConnect}
+                    disabled={stripeConnecting}
+                    className="px-4 py-2 rounded-xl bg-[#1a1a18] text-white text-sm hover:bg-black disabled:opacity-50 transition-colors"
+                  >
+                    {stripeStatus?.connected ? "Manage Stripe account" : stripeStatus?.status === 'incomplete' ? "Complete Stripe setup" : "Connect Stripe"}
+                  </button>
+                  {stripeConnectMessage && (
+                    <p className="text-xs text-amber-600">{stripeConnectMessage}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Listings section */}
           <div>

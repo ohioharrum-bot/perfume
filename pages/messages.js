@@ -7,9 +7,10 @@ import { Send, ArrowLeft, MessageCircle } from "lucide-react";
 
 export default function Messages() {
   const router = useRouter();
-  const { id: activeConvoId } = router.query;
+  const { id: activeConvoId, success, canceled } = router.query;
 
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [activeConvo, setActiveConvo] = useState(null);
@@ -18,6 +19,10 @@ export default function Messages() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [flagWarning, setFlagWarning] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
+  const [checkoutMessage, setCheckoutMessage] = useState("");
+  const [checkoutMessageType, setCheckoutMessageType] = useState("");
   const bottomRef = useRef(null);
 
   // 1. Auth
@@ -25,6 +30,7 @@ export default function Messages() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.push("/login"); return; }
       setUser(session.user);
+      setUserRole(session.user?.user_metadata?.role || null);
     });
   }, []);
 
@@ -48,12 +54,13 @@ export default function Messages() {
         filter: `conversation_id=eq.${activeConvo.id}`,
       }, (payload) => {
         setMessages((prev) => [...prev, payload.new]);
+        if (payload.new?.is_flagged) setFlagWarning(true);
         scrollToBottom();
       })
       .subscribe();
 
     return () => supabase.removeChannel(channel);
-  }, [activeConvo]);
+  }, [activeConvo, user]);
 
   async function fetchConversations() {
     setLoadingConvos(true);
@@ -61,9 +68,9 @@ export default function Messages() {
       .from("conversations")
       .select(`
         *,
-        listings (id, title, listing_images (image_url, is_cover)),
+        listings (id, title, price, status, listing_images (image_url, is_cover)),
         buyer:profiles!conversations_buyer_id_fkey (id, full_name, avatar_url),
-        seller:profiles!conversations_seller_id_fkey (id, full_name, avatar_url)
+        seller:profiles!conversations_seller_id_fkey (id, full_name, avatar_url, stripe_account_id)
       `)
       .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
       .order("created_at", { ascending: false });
@@ -88,6 +95,7 @@ export default function Messages() {
 
     if (!error && data) {
       setMessages(data);
+      setFlagWarning(data.some((msg) => msg.is_flagged));
       await supabase
         .from("messages")
         .update({ is_read: true })
@@ -98,9 +106,21 @@ export default function Messages() {
     scrollToBottom();
   }
 
+  useEffect(() => {
+    if (success === "true") {
+      setCheckoutMessage("Payment completed successfully. Refresh the conversation to see the latest status.");
+      setCheckoutMessageType("success");
+    } else if (canceled === "true") {
+      setCheckoutMessage("Payment was canceled. You can retry when ready.");
+      setCheckoutMessageType("error");
+    }
+  }, [success, canceled]);
+
   function selectConvo(convo) {
     setActiveConvo(convo);
     setFlagWarning(false);
+    setCheckoutMessage("");
+    setCheckoutMessageType("");
     router.push(`/messages?id=${convo.id}`, undefined, { shallow: true });
   }
 
@@ -133,6 +153,37 @@ export default function Messages() {
 
     setSending(false);
     scrollToBottom();
+  }
+
+  async function handlePayNow() {
+    if (!activeConvo || !user) return;
+    setCheckoutLoading(true);
+    setCheckoutError("");
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversation_id: activeConvo.id,
+          listing_id: activeConvo.listings.id,
+          buyer_id: user.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setCheckoutError(data.error || "Unable to start Stripe payment.");
+      } else if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setCheckoutError("Stripe payment could not be started.");
+      }
+    } catch (err) {
+      setCheckoutError(err.message || "Unable to start Stripe payment.");
+    }
+
+    setCheckoutLoading(false);
   }
 
   function getOtherPerson(convo) {
@@ -296,6 +347,39 @@ export default function Messages() {
                   )}
                 </div>
 
+                {/* Payment action for buyer */}
+                {(userRole === "buyer" || !userRole) && user?.id === activeConvo?.buyer?.id && activeConvo?.listings?.status === "active" && (
+                  <div className="px-5 py-4 border-b border-gray-100 bg-white">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Pay the seller securely</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Use Stripe to pay the seller for this listing. The seller must have Stripe connected.
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-start sm:items-end gap-2">
+                        <button
+                          type="button"
+                          disabled={checkoutLoading || !activeConvo.seller?.stripe_account_id}
+                          onClick={handlePayNow}
+                          className="px-4 py-2 rounded-xl bg-[#1a1a18] text-white text-sm hover:bg-black disabled:opacity-50 transition-colors"
+                        >
+                          {checkoutLoading ? "Starting payment..." : `Pay $${activeConvo.listings.price}`}
+                        </button>
+                        {!activeConvo.seller?.stripe_account_id && (
+                          <p className="text-xs text-amber-600">Seller has not connected Stripe yet. Ask them to connect in profile.</p>
+                        )}
+                      </div>
+                    </div>
+                    {checkoutError && <p className="text-xs text-red-500 mt-2">{checkoutError}</p>}
+                    {checkoutMessage && (
+                      <p className={`text-xs mt-2 ${checkoutMessageType === "success" ? "text-green-600" : "text-amber-600"}`}>
+                        {checkoutMessage}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* Messages area */}
                 <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-[#FAFAF9]">
                   {loadingMessages && (
@@ -327,9 +411,9 @@ export default function Messages() {
                             {msg.body}
                           </div>
                           {/* Flag indicator on the message bubble */}
-                          {msg.is_flagged && isMe && (
+                          {msg.is_flagged && (
                             <span className="text-[10px] text-amber-500 px-1 flex items-center gap-1">
-                              ⚠️ Flagged for review
+                              ⚠️ Flagged for review{msg.flag_reason ? ` • ${msg.flag_reason}` : ""}
                             </span>
                           )}
                           {showTime && (
