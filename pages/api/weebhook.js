@@ -7,7 +7,6 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-
 export const config = { api: { bodyParser: false } };
 
 async function getRawBody(req) {
@@ -42,7 +41,6 @@ export default async function handler(req, res) {
       const paymentIntent = event.data.object;
       const { listing_id, buyer_id, seller_id } = paymentIntent.metadata;
 
-      // Update order status to paid
       await supabaseAdmin
         .from("orders")
         .update({
@@ -51,7 +49,6 @@ export default async function handler(req, res) {
         })
         .eq("stripe_payment_intent_id", paymentIntent.id);
 
-      // Mark listing as sold
       await supabaseAdmin
         .from("listings")
         .update({ status: "sold" })
@@ -63,7 +60,6 @@ export default async function handler(req, res) {
     if (event.type === "payment_intent.payment_failed") {
       const paymentIntent = event.data.object;
 
-      // Update order status to failed
       await supabaseAdmin
         .from("orders")
         .update({ status: "failed" })
@@ -72,9 +68,25 @@ export default async function handler(req, res) {
       console.log(`Payment failed for intent ${paymentIntent.id}`);
     }
 
+    // THIS IS THE KEY FIX - Handle account updates
     if (event.type === "account.updated") {
       const account = event.data.object;
-      console.log(`Stripe account updated: ${account.id}`);
+      
+      // Update the profile with the account's connection status
+      const { error: updateError } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          stripe_account_status: account.details_submitted ? "connected" : "incomplete",
+          stripe_charges_enabled: account.charges_enabled,
+          stripe_details_submitted: account.details_submitted,
+        })
+        .eq("stripe_account_id", account.id);
+
+      if (updateError) {
+        console.error("Failed to update profile:", updateError);
+      } else {
+        console.log(`Stripe account updated: ${account.id}, details_submitted: ${account.details_submitted}`);
+      }
     }
 
     return res.status(200).json({ received: true });
